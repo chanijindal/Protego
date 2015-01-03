@@ -1,13 +1,16 @@
 package protego.com.protego;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.SharedPreferences.Editor;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.Map;
@@ -19,22 +22,42 @@ import static protego.com.protego.Iptables.*;
 
 public class MainActivity extends ActionBarActivity {
 
-    String script=null;
+    StringBuilder script =new StringBuilder();
     StringBuilder result =new StringBuilder();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Iptables.hasRoot(this);
        // script="tcpdump || exit";
-         script="iptables -I OUTPUT 1 -j LOG --log-prefix \"[NetworkLogEntry]\" --log-uid";
+      String rule1 ="iptables -I INPUT 1 -j LOG --log-prefix \"[IPT IN START] \" --log-level 4 --log-uid ||exit/n ";
+       // String start="su -c \"fgrep '[IPT IN ' /proc/kmsg\"|| exit\n";
+       // script.append("iptables -F || exit\n");
+       // String rule2 ="iptables -L";
+         script.append(rule1);
+       // script.append(start);
       /* if( Iptables.runAsRootUser(script,result,1000)==0)
            Toast.makeText(this,"Packets captured",Toast.LENGTH_LONG).show();
         else
            Toast.makeText(this,"error capturing packets",Toast.LENGTH_LONG).show();
 */
-        if(Iptables.runAsRootUser(script,result,1000)==0)
-            Toast.makeText(this,"Hurray iptables is working",Toast.LENGTH_LONG).show();
+        if(Iptables.runAsRootUser(script.toString(),result,1000)==0) {
+            /*Log.d("Am I printing","Yes");
+            if(result.toString().isEmpty())
+            {
+                Log.d("Error message","No result");
+            }
+            else
+            Log.d("what the hell","is happening");
+
+            //Log.e("Just checking", result.toString());
+            */
+           // Toast.makeText(this, "Hurray iptables is working", Toast.LENGTH_LONG).show();
+
+           showAlertBox(result.toString(),this);
+
+        }
         else
             Toast.makeText(this,"Oops I guess there's a problem",Toast.LENGTH_LONG).show();
 
@@ -46,6 +69,17 @@ public class MainActivity extends ActionBarActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+
+    public static void showAlertBox(String message,Context context)
+    {
+        if(context!=null)
+        {
+            AlertDialog.Builder alert= new AlertDialog.Builder(context);
+            alert.setMessage(message);
+            alert.show();
+        }
     }
 
 

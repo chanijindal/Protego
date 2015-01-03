@@ -39,6 +39,7 @@ public class ScriptRunner extends Thread{
             {
                 if(result!=null)
                     result.append(buf,0,inputLength);
+
             }
 
             reader= new InputStreamReader(process.getErrorStream());
