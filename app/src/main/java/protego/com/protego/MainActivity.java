@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.SharedPreferences.Editor;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -20,44 +22,33 @@ import static android.content.DialogInterface.*;
 import static protego.com.protego.Iptables.*;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements View.OnClickListener{
 
-    StringBuilder script =new StringBuilder();
-    StringBuilder result =new StringBuilder();
+
+    Button applyRulesButton,showRulesButton,showLogButton ;
+    TextView resultTextView;
+    public static  StringBuilder script =new StringBuilder();
+    public static StringBuilder result =new StringBuilder();
+    public static StringBuilder logResult=new StringBuilder();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        applyRulesButton= (Button) findViewById(R.id.applyRulesButton);
+        applyRulesButton.setOnClickListener(this);
+        showRulesButton= (Button) findViewById(R.id.showRulesButton);
+        showRulesButton.setOnClickListener(this);
+        showLogButton= (Button) findViewById(R.id.showLogButton);
+        showLogButton.setOnClickListener(this);
+        resultTextView= (TextView) findViewById(R.id.resultTextView);
         Iptables.hasRoot(this);
-       // script="tcpdump || exit";
-      String rule1 ="iptables -I INPUT 1 -j LOG --log-prefix \"[IPT IN START] \" --log-level 4 --log-uid ||exit/n ";
-       // String start="su -c \"fgrep '[IPT IN ' /proc/kmsg\"|| exit\n";
-       // script.append("iptables -F || exit\n");
-       // String rule2 ="iptables -L";
-         script.append(rule1);
-       // script.append(start);
-      /* if( Iptables.runAsRootUser(script,result,1000)==0)
-           Toast.makeText(this,"Packets captured",Toast.LENGTH_LONG).show();
-        else
-           Toast.makeText(this,"error capturing packets",Toast.LENGTH_LONG).show();
-*/
+
+
         if(Iptables.runAsRootUser(script.toString(),result,1000)==0) {
-            /*Log.d("Am I printing","Yes");
-            if(result.toString().isEmpty())
-            {
-                Log.d("Error message","No result");
+
+            Toast.makeText(this, "Hurray iptables is working", Toast.LENGTH_LONG).show();
             }
-            else
-            Log.d("what the hell","is happening");
-
-            //Log.e("Just checking", result.toString());
-            */
-           // Toast.makeText(this, "Hurray iptables is working", Toast.LENGTH_LONG).show();
-
-           showAlertBox(result.toString(),this);
-
-        }
         else
             Toast.makeText(this,"Oops I guess there's a problem",Toast.LENGTH_LONG).show();
 
@@ -83,40 +74,28 @@ public class MainActivity extends ActionBarActivity {
     }
 
 
-   /* private void checkPreferences()
+
+
+    public static  void makeIptableRules()
     {
-        SharedPreferences sharedPreferences=getSharedPreferences(SHAREDPREF_NAME,0);
-        Editor editor = sharedPreferences.edit();
-        boolean changed=false;
-        if(sharedPreferences.getString(SHAREDPREF_INTERFACE,"").length()==0) {
-            editor.putString(SHAREDPREF_INTERFACE, SHAREDPREF_INTERFACE_2G);
-            changed=true;
-        }
-        if(sharedPreferences.getString(SHAREDPREF_MODE,"").length()==0) {
-            editor.putString(SHAREDPREF_MODE, SHAREDPREF_MODE_WHITELIST);
-            changed=true;
-        }
-
-        if(changed)
-            editor.commit();
+      script.append("iptables -I INPUT 1 -j LOG --log-prefix \"[IPT IN START] \" --log-level 4 --log-uid\n");
 
     }
 
 
-    private void selectInterface()
-    { new AlertDialog.Builder(this).setItems(new String[]{"2G/3G Network","Wi-fi","Both"}, new DialogInterface.OnClickListener(){
-        public void onClick(DialogInterface dialog, int which) {
-            final String interfac = (which==0 ? Iptables.SHAREDPREF_INTERFACE_2G : which==1 ? Iptables.SHAREDPREF_INTERFACE_WIFI : Iptables.SHAREDPREF_INTERFACE_2G+"|"+Iptables.SHAREDPREF_INTERFACE_WIFI);
-            final Editor editor = getSharedPreferences(Iptables.SHAREDPREF_NAME, 0).edit();
-            editor.putString(Iptables.SHAREDPREF_INTERFACE, interfac);
-            editor.commit();
-           // refreshHeader();
-        }
-    }).setTitle("Select interfaces:")
-            .show();
+    public static  void showIptableRules()
+    {
+        script.append("iptables -L\n");
+
     }
 
-*/
+
+    public static void showLogOutput()
+    {
+        script.append("su -c \"fgrep '[IPT IN ' /proc/kmsg\"");
+    }
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -131,5 +110,31 @@ public class MainActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch(v.getId())
+        {
+            case R.id.applyRulesButton:
+                makeIptableRules();
+                resultTextView.setText("IPTABLE RULES APPLIED");
+                runAsRootUser(script.toString(),result,1000);
+                return;
+            case R.id.showRulesButton:
+                showIptableRules();
+                runAsRootUser(script.toString(),result,1000);
+                showAlertBox(result.toString(),this);
+                return;
+            case R.id.showLogButton:
+               // showLogOutput();
+                runAsRootUser("su -c \"fgrep '[IPT IN ' /proc/kmsg\"",logResult,1000);
+                showAlertBox(logResult.toString(),this);
+                if(MakeLogTextFile.makeFile(logResult.toString(),this)==true)
+                resultTextView.setText("TEXT FILE FOR LOGS CREATED");
+                else
+                resultTextView.setText("TEXT FILE COULD NOT BE CREATED");
+                return;
+        }
     }
 }

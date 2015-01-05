@@ -9,19 +9,18 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="START"
-        android:id="@+id/startButton"
-        android:layout_marginBottom="52dp"
-        android:layout_alignParentBottom="true"
+        android:text="APPLY RULES"
+        android:id="@+id/applyRulesButton"
+        android:layout_below="@+id/resultTextView"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="STOP"
-        android:id="@+id/stopButton"
-        android:layout_alignBottom="@+id/startButton"
+        android:text="SHOW RULES"
+        android:id="@+id/showRulesButton"
+        android:layout_alignBottom="@+id/applyRulesButton"
         android:layout_alignParentRight="true"
         android:layout_alignParentEnd="true" />
 
@@ -35,5 +34,14 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginTop="96dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SHOW LOG"
+        android:id="@+id/showLogButton"
+        android:layout_below="@+id/applyRulesButton"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>
