@@ -25,11 +25,13 @@ import static protego.com.protego.Iptables.*;
 public class MainActivity extends ActionBarActivity implements View.OnClickListener{
 
 
-    Button applyRulesButton,showRulesButton,showLogButton ;
+    Button applyRulesButton,showRulesButton,showLogButton,chooseDirectoryButton ;
     TextView resultTextView;
     public static  StringBuilder script =new StringBuilder();
     public static StringBuilder result =new StringBuilder();
     public static StringBuilder logResult=new StringBuilder();
+    String m_chosenDir = "";
+    boolean m_newFolderEnabled = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         showRulesButton.setOnClickListener(this);
         showLogButton= (Button) findViewById(R.id.showLogButton);
         showLogButton.setOnClickListener(this);
+        chooseDirectoryButton= (Button) findViewById(R.id.chooseDirectoryButton);
+        chooseDirectoryButton.setOnClickListener(this);
         resultTextView= (TextView) findViewById(R.id.resultTextView);
+
         Iptables.hasRoot(this);
 
 
@@ -97,6 +102,34 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
 
 
+
+    public  void showDirectoryDialog()
+    {
+
+
+
+
+        DirectoryChooserDialog directoryChooserDialog =
+                new DirectoryChooserDialog(MainActivity.this,
+                        new DirectoryChooserDialog.ChosenDirectoryListener()
+                        {
+                            @Override
+                            public void onChosenDir(String chosenDir)
+                            {
+                                m_chosenDir = chosenDir;
+                                Toast.makeText(
+                                        MainActivity.this, "Chosen directory: " +
+                                                chosenDir, Toast.LENGTH_LONG).show();
+                            }
+                        });
+        // Toggle new folder button enabling
+        directoryChooserDialog.setNewFolderEnabled(m_newFolderEnabled);
+        // Load directory chooser dialog for initial 'm_chosenDir' directory.
+        // The registered callback will be called upon final directory selection.
+        directoryChooserDialog.chooseDirectory(m_chosenDir);
+        m_newFolderEnabled = ! m_newFolderEnabled;
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -130,11 +163,16 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
                // showLogOutput();
                 runAsRootUser("su -c \"fgrep '[IPT IN ' /proc/kmsg\"",logResult,1000);
                 showAlertBox(logResult.toString(),this);
-                if(MakeLogTextFile.makeFile(logResult.toString(),this)==true)
+                if(MakeLogTextFile.makeFile(logResult.toString(),m_chosenDir,this)==true)
                 resultTextView.setText("TEXT FILE FOR LOGS CREATED");
                 else
                 resultTextView.setText("TEXT FILE COULD NOT BE CREATED");
                 return;
+
+            case R.id.chooseDirectoryButton:
+                showDirectoryDialog();
+                return;
+
         }
     }
 }
